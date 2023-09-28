@@ -1,7 +1,3 @@
-package main
-
-import "fmt"
-
 /*
     Problem statement:
     You are given start time and end time for a task.
@@ -9,6 +5,7 @@ import "fmt"
         start = []int32{task1startTime, task2startTime, task3startTime, ...}
         end = []int32{task1endTime, task2endTime, task3endTime, ...}
     Length of both slices will always be equal.
+	start[i] will always be less than end[i]
 
     There are machines which can perform these task.
     Each machine can only do one task at a time.
@@ -26,6 +23,8 @@ import "fmt"
         So, the least number of machines required is 3.
 */
 
+package main
+
 type TimeSlot struct {
 	Start int32
 	End   int32
@@ -35,6 +34,9 @@ type Machine struct {
 	TimeSlots []TimeSlot
 }
 
+const maxInt32 = int32(^uint32(0) >> 1)
+
+// getLastTimeSlot returns the last time slot in a machine's schedule.
 func getLastTimeSlot(machine Machine) TimeSlot {
 	if len(machine.TimeSlots) == 0 {
 		return TimeSlot{}
@@ -42,8 +44,9 @@ func getLastTimeSlot(machine Machine) TimeSlot {
 	return machine.TimeSlots[len(machine.TimeSlots)-1]
 }
 
+// chooseAvailableMachine selects the machine with the earliest available time slot.
 func chooseAvailableMachine(machines []Machine) int {
-	var leastTime int32 = 100000 // Set to some imaginary big number
+	var leastTime int32 = maxInt32 // Max int32 value
 	var availableMachineIndex int
 
 	for index, machine := range machines {
@@ -56,11 +59,12 @@ func chooseAvailableMachine(machines []Machine) int {
 	return availableMachineIndex
 }
 
-func pushAndUpdateTimeSlotInMachines(timeslot TimeSlot, totalMachines []Machine) []Machine {
+// allocateTask allocates a task to a machine based on the provided time slot.
+func allocateTask(timeslot TimeSlot, totalMachines []Machine) []Machine {
 	availableMachineIndex := chooseAvailableMachine(totalMachines)
-	
-    // For the first allocation
-    if len(totalMachines) == 0 {
+
+	// For the first allocation
+	if len(totalMachines) == 0 {
 		return []Machine{
 			{TimeSlots: []TimeSlot{
 				timeslot,
@@ -70,7 +74,7 @@ func pushAndUpdateTimeSlotInMachines(timeslot TimeSlot, totalMachines []Machine)
 
 	availableMachineTimeSlots := totalMachines[availableMachineIndex].TimeSlots
 
-    // Allocate task to a new machine
+	// Allocate task to a new machine
 	if timeslot.Start <= availableMachineTimeSlots[len(availableMachineTimeSlots)-1].End {
 		totalMachines = append(totalMachines, Machine{
 			TimeSlots: []TimeSlot{timeslot},
@@ -78,30 +82,19 @@ func pushAndUpdateTimeSlotInMachines(timeslot TimeSlot, totalMachines []Machine)
 		return totalMachines
 	}
 
-    // Allocate task to an existing machine
+	// Allocate task to an existing machine
 	totalMachines[availableMachineIndex].TimeSlots = append(totalMachines[availableMachineIndex].TimeSlots, timeslot)
 	return totalMachines
 }
 
-func getLeastRequiredMachine(start, end []int32) int32 {
+// GetLeastRequiredMachine calculates the least number of machines required to perform all tasks.
+func GetLeastRequiredMachine(start, end []int32) int32 {
 	var totalMachines []Machine
 	for i := 0; i < len(start); i++ {
-		totalMachines = pushAndUpdateTimeSlotInMachines(TimeSlot{
+		totalMachines = allocateTask(TimeSlot{
 			Start: start[i],
 			End:   end[i],
 		}, totalMachines)
 	}
 	return int32(len(totalMachines))
-}
-
-func main() {
-    // Test case 1
-	start := []int32{2, 1, 5, 5, 8}
-	end := []int32{5, 3, 8, 6, 12}
-
-    // Test case 2
-	// start := []int32{10, 9, 8, 10}
-	// end := []int32{11, 11, 9, 14}
-
-	fmt.Println(getLeastRequiredMachine(start, end))
 }
