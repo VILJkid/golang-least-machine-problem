@@ -38,9 +38,6 @@ const maxInt32 = int32(^uint32(0) >> 1)
 
 // getLastTimeSlot returns the last time slot in a machine's schedule.
 func getLastTimeSlot(machine Machine) TimeSlot {
-	if len(machine.TimeSlots) == 0 {
-		return TimeSlot{}
-	}
 	return machine.TimeSlots[len(machine.TimeSlots)-1]
 }
 
@@ -61,8 +58,6 @@ func chooseAvailableMachine(machines []Machine) int {
 
 // allocateTask allocates a task to a machine based on the provided time slot.
 func allocateTask(timeslot TimeSlot, totalMachines []Machine) []Machine {
-	availableMachineIndex := chooseAvailableMachine(totalMachines)
-
 	// For the first allocation
 	if len(totalMachines) == 0 {
 		return []Machine{
@@ -72,6 +67,7 @@ func allocateTask(timeslot TimeSlot, totalMachines []Machine) []Machine {
 		}
 	}
 
+	availableMachineIndex := chooseAvailableMachine(totalMachines)
 	availableMachineTimeSlots := totalMachines[availableMachineIndex].TimeSlots
 
 	// Allocate task to a new machine
