@@ -1,28 +1,3 @@
-/*
-    Problem statement:
-    You are given start time and end time for a task.
-    They are provided in slices in this format:
-        start = []int32{task1startTime, task2startTime, task3startTime, ...}
-        end = []int32{task1endTime, task2endTime, task3endTime, ...}
-    Length of both slices will always be equal.
-	start[i] will always be less than end[i]
-
-    There are machines which can perform these task.
-    Each machine can only do one task at a time.
-    Efficiently allocate tasks to the machines so that least numbers of machines
-    are required to perform all the tasks.
-
-    Eg:
-        start = []int32{2, 1, 5, 5, 8}
-	    end = []int32{5, 3, 8, 6, 12}
-
-        Machine 1 = [(2, 5), (8, 12)]
-        Machine 2 = [(1, 3), (5, 8)]
-        Machine 3 = [(5, 6)]
-
-        So, the least number of machines required is 3.
-*/
-
 package main
 
 type TimeSlot struct {
@@ -57,9 +32,9 @@ func chooseAvailableMachine(machines []Machine) int {
 }
 
 // allocateTask allocates a task to a machine based on the provided time slot.
-func allocateTask(timeslot TimeSlot, totalMachines []Machine) []Machine {
+func allocateTask(timeslot TimeSlot, machines []Machine) []Machine {
 	// For the first allocation
-	if len(totalMachines) == 0 {
+	if len(machines) == 0 {
 		return []Machine{
 			{TimeSlots: []TimeSlot{
 				timeslot,
@@ -67,30 +42,30 @@ func allocateTask(timeslot TimeSlot, totalMachines []Machine) []Machine {
 		}
 	}
 
-	availableMachineIndex := chooseAvailableMachine(totalMachines)
-	availableMachineTimeSlots := totalMachines[availableMachineIndex].TimeSlots
+	availableMachineIndex := chooseAvailableMachine(machines)
+	availableMachineTimeSlots := machines[availableMachineIndex].TimeSlots
 
 	// Allocate task to a new machine
 	if timeslot.Start <= availableMachineTimeSlots[len(availableMachineTimeSlots)-1].End {
-		totalMachines = append(totalMachines, Machine{
+		machines = append(machines, Machine{
 			TimeSlots: []TimeSlot{timeslot},
 		})
-		return totalMachines
+		return machines
 	}
 
 	// Allocate task to an existing machine
-	totalMachines[availableMachineIndex].TimeSlots = append(totalMachines[availableMachineIndex].TimeSlots, timeslot)
-	return totalMachines
+	machines[availableMachineIndex].TimeSlots = append(machines[availableMachineIndex].TimeSlots, timeslot)
+	return machines
 }
 
 // GetLeastRequiredMachine calculates the least number of machines required to perform all tasks.
 func GetLeastRequiredMachine(start, end []int32) int32 {
-	var totalMachines []Machine
+	var machines []Machine
 	for i := 0; i < len(start); i++ {
-		totalMachines = allocateTask(TimeSlot{
+		machines = allocateTask(TimeSlot{
 			Start: start[i],
 			End:   end[i],
-		}, totalMachines)
+		}, machines)
 	}
-	return int32(len(totalMachines))
+	return int32(len(machines))
 }
